@@ -1,0 +1,4 @@
+- name: Add htaccess
+  template: 
+    src: htaccess_redirect_iptourl.j2 
+    dest: "/var/www/html/.htaccess"

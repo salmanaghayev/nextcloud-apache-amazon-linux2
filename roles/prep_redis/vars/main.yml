@@ -1,0 +1,4 @@
+---
+# vars file for prep_redis
+
+redis_conf_path: '/etc'

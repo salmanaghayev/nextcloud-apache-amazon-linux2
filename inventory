@@ -1,0 +1,62 @@
+[nextcloud]
+  localhost ansible_connection=local
+
+[nextcloud:vars]
+# Server domain name
+# Default is the fqdn of the machine
+fqdn                  = nc.example.com
+
+# selfsigned certificate as default
+#ssl_certificate_type = 'selfsigned'
+
+# Letsencrypt or selfsigned certificate
+ssl_certificate_type  = 'letsencrypt'
+
+# Your email adresse for letsencrypt
+# cert_email = nc@example.org
+
+# receive a certificate from staging
+# uncomment if you want to use letsencrypt staging environment
+# cert_stage = '--staging'
+
+# Nextcloud varibales
+# web ports
+nc_web_port           = 80
+nc_ssl_port           = 443
+
+# data dir
+nc_datadir            = /var/nc-data
+
+# admin user
+nc_admin              = 'admin'
+nc_passwd             = ''             # leave empty to generate random password
+
+# database settings
+nc_db_host            = 'localhost'
+nc_db                 = 'nextcloud'
+nc_db_user            = 'nextcloud'
+nc_db_passwd          = ''             # leave empty to generate random password
+nc_db_prefix          = 'oc_'
+
+# Nextcloud mail setup
+nc_configure_mail     = false
+nc_mail_from          =
+nc_mail_smtpmode      = smtp
+nc_mail_smtpauthtype  = LOGIN
+nc_mail_domain        =
+nc_mail_smtpname      =
+nc_mail_smtpsecure    = tls
+nc_mail_smtpauth      = 1
+nc_mail_smtphost      =
+nc_mail_smtpport      = 587
+nc_mail_smtpname      =
+nc_mail_smtppwd       =
+
+# php Version
+php_version           = '7.3'
+
+# Allways get the latest version of Nextcloud
+next_archive          = https://download.nextcloud.com/server/releases/latest.tar.bz2
+
+# defaults path of your generated credentials (e.g. database, talk, onlyoffice)
+credential_store      = /etc/nextcloud

@@ -1,0 +1,122 @@
+---
+# tasks file for prep_os
+
+- name: add amazon epel repo
+  shell: amazon-linux-extras install epel
+  args:
+    creates: /etc/yum.repos.d/amzn2-extras.repo
+
+- name: update os
+  yum:
+    name: '*'
+    update_cache: true
+    state: latest
+
+- name: install needed packages
+  yum:
+    name:
+      - zip
+      - unzip
+      - bzip2
+      - screen
+      - curl
+      - wget
+      - perl-File-FcntlLock 
+      - ImageMagick
+      - ghostscript
+      - postfix
+      - firewalld
+      - facter
+      - policycoreutils-python
+    state: latest
+    #enablerepo: amzn2extra-epel
+
+- name: create some folders
+  file:
+    name: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  with_items:
+    - { path: '/usr/local/tmp/apc',      owner: '{{ web_user }}', group: 'root', mode: '1777' }
+    - { path: '/usr/local/tmp/sessions', owner: '{{ web_user }}', group: 'root', mode: '1777' }
+    - { path: '/usr/local/tmp/cache',    owner: '{{ web_user }}', group: 'root', mode: '1777' }
+
+- name: get uid of web_user
+  user:
+    name: "{{ web_user }}"
+  register: web_user_id
+  
+- name: mount tmp fs
+  mount:
+    src: "tmpfs"
+    path: "{{ item }}"
+    fstype: tmpfs
+    opts: "defaults,noatime,nosuid,nodev,noexec,mode=1777"
+    passno: "0"
+    state: mounted
+  with_items:
+    - /tmp
+    - /var/tmp
+
+- name: mount tmp fs
+  mount:
+    src: "tmpfs"
+    path: "{{ item }}"
+    fstype: tmpfs
+    opts: "defaults,uid={{ web_user_id.uid }},size=300M,noatime,nosuid,nodev,noexec,mode=1777"
+    passno: "0"
+    state: mounted
+  with_items:
+    - /usr/local/tmp/apc
+    - /usr/local/tmp/cache
+    - /usr/local/tmp/sessions
+
+- name: sysctl vm.overcommit_memory=1
+  sysctl: 
+    name: vm.overcommit_memory
+    value: "1"
+    state: present
+    reload: true
+    sysctl_file: /etc/sysctl.conf
+
+- name: sysctl -w net.core.somaxconn=65535
+  sysctl:
+    name: net.core.somaxconn
+    value: "65535"
+    state: present
+    reload: true
+    sysctl_file: /etc/sysctl.conf
+
+- name: disable transparent hugepages - copy service file
+  copy:
+    src: disable-transparent-huge-pages.service
+    dest: '{{ service_path }}/disable-transparent-huge-pages.service'
+    owner: root
+    group: root
+    mode: 0644
+
+- name: enable service disable-transparent-hugepages
+  service:
+    name: disable-transparent-huge-pages.service
+    enabled: true
+    state: started
+    
+- name: create symbolic link to /usr/bin/gs
+  file:
+    src:  /usr/bin/gs
+    dest: /usr/local/bin/gs
+    state: link
+    
+- name: change ImageMagick settings
+  lineinfile:
+    path:   '{{ imagemagick_xml_path }}'
+    line:   '  <policy domain="coder" rights="read|write" pattern="{{ item }}" />'
+    regexp: '(.*)<policy domain="coder" rights="(.*)" pattern="{{ item }}" />(.*)'
+    insertbefore: '</policymap>'
+  loop:
+    - PS
+    - EPI
+    - PDF
+    - XPS

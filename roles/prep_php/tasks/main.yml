@@ -1,0 +1,115 @@
+---
+# tasks file for prep_php
+
+- name: install amazon php7.3
+  shell: amazon-linux-extras install php{{ php_version }}
+  args:
+    creates: /usr/bin/php
+
+- name: update os
+  yum:
+    name: '*'
+    update_cache: true
+    state: latest
+
+- name: install needed packages
+  yum:
+    name:
+      - php
+      - php-cli
+      - php-fpm
+      - php-gd
+      - php-mysqlnd
+      - php-curl
+      - php-xml
+      - php-intl
+      - php-mbstring
+      - php-json
+      - php-bz2
+      - php-redis
+      - php-pecl-imagick
+      - php-common
+      - php-gmp
+      - php-intl
+      - php-ldap
+      - php-opcache
+      - php-pear
+      - php-pdo
+      - php-pecl-apcu
+      - php-pecl-zip
+    state: latest
+
+- name: configure php
+  copy:
+    src: "{{ item.file }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0644
+    force: true
+  with_items:
+    - { file: 'cli.php.ini',  dest: '{{ php_cli_conf_dir }}/php-cli.ini' }
+  notify: restart php-fpm
+
+- name: correct ownership /var/lib/php
+  file:
+    name: "{{ item.name }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode:  0770
+  with_items: 
+    - { owner: apache,  group: apache, name: '/var/lib/php' }
+
+- name: replace opcache.max_accelerated_files=4000
+  lineinfile:
+    path: /etc/php.d/10-opcache.ini
+    regexp: '^opcache.max_accelerated_files=(.*)'
+    line:   'opcache.max_accelerated_files=10000'
+    backup: true
+  notify: restart php-fpm
+
+- name: alias php 
+  copy:
+    content: |
+      #!/bin/bash
+      alias php="php -c /etc/php-cli.ini"
+    dest: /etc/profile.d/php-cli-ini.sh  
+  when: false
+
+- name: configure php
+  copy:
+    src: "{{ item.file }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0644
+    force: true
+  with_items:
+    - { file: 'fpm.php.ini',  dest: '{{ php_fpm_conf_dir }}/php.ini' }
+  notify: restart php-fpm
+
+- name: configure php
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0644
+    force: true
+  with_items:
+    - { file: 'www.conf',     dest: '{{ php_www_conf_dir }}/www.conf' }
+    - { file: 'php-fpm.conf', dest: '{{ php_fpm_conf_dir }}/php-fpm.conf' }
+  notify: restart php-fpm
+
+- name: include selinux tasks
+  include_tasks: selinux.yml
+  when: 
+    - (ansible_os_family == "RedHat")
+    - ('status' in ansible_selinux)
+    - (ansible_selinux.status == "enabled")
+
+- name: enable php-fpm
+  systemd:
+    name: "{{ php_service_name }}"
+    state: restarted
+    enabled: true

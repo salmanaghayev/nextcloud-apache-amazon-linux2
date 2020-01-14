@@ -1,0 +1,30 @@
+---
+# tasks file for prep_redis
+
+- name: install needed packages
+  yum:
+    name: redis
+    state: latest
+    enablerepo: amzn2extra-epel
+
+- name: configure redis
+  copy:
+    src: redis.conf
+    dest: "{{ redis_conf_path }}/redis.conf"
+    owner: root
+    group: root
+    mode: 0644
+    force: true
+  notify: restart redis-server
+
+- name: add user {{ web_user }} to group redis
+  user:
+   name:   "{{ web_user }}"
+   groups: redis
+
+- name: start and enable redis
+  systemd:
+    name:    redis
+    state:   started
+    enabled: true
+

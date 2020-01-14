@@ -1,0 +1,11 @@
+---
+#vars file for prep_httpd
+
+web_user: apache
+
+server_name: "nextcloud.example.com"
+
+vhost_domain: "nextcloud.example.com"
+vhost_docroot: "/var/www/nextcloud"
+
+php_socket: '/run/php-fpm/php{{ php_version }}-fpm.sock'

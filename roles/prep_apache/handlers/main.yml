@@ -1,0 +1,16 @@
+---
+# handlers file for prep_apache
+
+- name: restart httpd
+  listen: enable coturn
+  systemd:
+    name: httpd
+    state: restarted
+
+
+- name: restart httpd
+  listen: enable coturn
+  systemd:
+    name: httpd
+    state: restarted
+

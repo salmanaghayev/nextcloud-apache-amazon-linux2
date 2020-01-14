@@ -1,0 +1,12 @@
+---
+# vars file for prep_php
+
+php_db_extension: php{{ php_version }}-mysql
+
+php_service_name:  php-fpm
+
+php_fpm_conf_dir: /etc
+
+php_cli_conf_dir: /etc
+
+php_www_conf_dir: /etc/php-fpm.d

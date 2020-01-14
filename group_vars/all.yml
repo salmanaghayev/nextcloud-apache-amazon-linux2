@@ -1,0 +1,11 @@
+---
+# Some common variables used in more then roles
+ 
+web_user: 'apache'
+web_group: 'apache'
+pg_user_id: '70'
+pg_group_id: '70'
+
+credential_store: /etc/nextcloud
+dhparam_path:     /etc/apache/certs/dhparam.pem
+

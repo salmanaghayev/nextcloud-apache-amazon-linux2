@@ -1,0 +1,6 @@
+---
+# vars file for prep_mariadb
+
+mariadb_conf_dir: /etc/my.cnf.d/my.cnf
+
+mariadb_sock_dir: /var/lib/mysql

@@ -1,0 +1,42 @@
+- name: Set DefaultCharset
+  lineinfile: >
+    dest=/etc/httpd/conf/httpd.conf
+    state=present
+    regexp="^AddDefaultCharset"
+    line="AddDefaultCharset Off"
+  notify: restart httpd
+- name: Set Apache User
+  lineinfile: >
+    dest=/etc/httpd/conf/httpd.conf
+    state=present
+    regexp="^User"
+    line="User {{ web_user }}"
+  notify: restart httpd
+- name: Set ServerSignature
+  lineinfile: >
+    dest=/etc/httpd/conf/httpd.conf
+    state=present
+    regexp="^ServerSignature"
+    line="ServerSignature Off"
+  notify: restart httpd
+- name: Set ServerTokens
+  lineinfile: >
+    dest=/etc/httpd/conf/httpd.conf
+    state=present
+    regexp="^ServerTokens"
+    line="ServerTokens Prod"
+  notify: restart httpd
+- name: Set HostnameLookups
+  lineinfile: >
+    dest=/etc/httpd/conf/httpd.conf
+    state=present
+    regexp="^HostnameLookups"
+    line="HostnameLookups Off"
+  notify: restart httpd
+- name: Set TraceEnable off
+  lineinfile: >
+    dest=/etc/httpd/conf/httpd.conf
+    state=present
+    regexp="^TraceEnable"
+    line="TraceEnable Off"
+  notify: restart httpd

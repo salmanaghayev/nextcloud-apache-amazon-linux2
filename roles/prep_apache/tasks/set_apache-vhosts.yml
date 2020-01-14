@@ -1,0 +1,20 @@
+- name: Create DefaultVirtualHost Dir
+  file: 
+    path: /var/www/vhosts
+    state: directory
+- name: Create DefaultVirtualHost Config
+  template: 
+    src: vhost_default.conf.j2 
+    dest: /etc/httpd/conf.d/00_vhost_default.conf
+  notify: restart httpd
+- name: Create VirtualHost Dir
+  file: 
+    path: /var/www/nextcloud
+    state: directory
+    owner: apache 
+    group: apache
+- name: Create VirtualHost Config
+  template: 
+    src: vhost_orig.conf.{{ ssl_certificate_type }}.j2 
+    dest: /etc/httpd/conf.d/10_vhost_{{vhost_domain}}.conf
+  notify: restart httpd
